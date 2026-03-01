@@ -76,130 +76,157 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       ),
       body: Stack(
         children: [
-          // Background subtle gold glow
+          // Earthy background with organic glow
           Positioned(
-            top: -50,
-            left: -100,
+            top: -100,
+            left: -150,
             child: Container(
-              width: 350,
-              height: 350,
+              width: 450,
+              height: 450,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.pureGold.withOpacity(0.06),
-                    AppTheme.pureGold.withOpacity(0.0),
+                    AppTheme.sage.withOpacity(0.1),
+                    AppTheme.sage.withOpacity(0.0),
                   ],
                 ),
               ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                child: Container(color: Colors.transparent),
+            ),
+          ),
+          Positioned(
+            top: 200,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppTheme.peach.withOpacity(0.08),
+                    AppTheme.peach.withOpacity(0.0),
+                  ],
+                ),
               ),
             ),
           ),
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 80),
                     const Text(
-                      'JOIN US',
+                      'join the circle',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 36,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 10,
-                        color: AppTheme.pureGold,
+                        color: AppTheme.brown,
+                        letterSpacing: -1,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'START THE JOURNEY',
+                    const Text(
+                      'Create your organic space.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 4,
-                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.rose,
                       ),
                     ),
-                    const SizedBox(height: 60),
-                    Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardTheme.color,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: AppTheme.pureGold.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextFormField(
-                              controller: _nameController,
-                              decoration: const InputDecoration(
-                                labelText: 'FULL NAME',
-                                prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                              ),
-                              validator: (value) => value!.isEmpty ? 'Enter name' : null,
+                    const SizedBox(height: 48),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextFormField(
+                            controller: _nameController,
+                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
+                            decoration: const InputDecoration(
+                              labelText: 'YOUR NAME',
+                              prefixIcon: Icon(Icons.face_retouching_natural_rounded, size: 18),
+                              fillColor: Colors.white,
                             ),
-                            const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'EMAIL ADDRESS',
-                                prefixIcon: Icon(Icons.email_outlined, size: 20),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) => value!.isEmpty ? 'Enter email' : null,
+                            validator: (value) => value!.isEmpty ? 'We\'d love to know your name' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _emailController,
+                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
+                            decoration: const InputDecoration(
+                              labelText: 'EMAIL',
+                              prefixIcon: Icon(Icons.alternate_email_rounded, size: 18),
+                              fillColor: Colors.white,
                             ),
-                            const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _passwordController,
-                              decoration: const InputDecoration(
-                                labelText: 'PASSWORD',
-                                prefixIcon: Icon(Icons.lock_outline_rounded, size: 20),
-                              ),
-                              obscureText: true,
-                              validator: (value) => value!.length < 6 ? 'Min 6 chars' : null,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) => value!.isEmpty ? 'Email is required' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _passwordController,
+                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
+                            decoration: const InputDecoration(
+                              labelText: 'PASSWORD',
+                              prefixIcon: Icon(Icons.password_rounded, size: 18),
+                              fillColor: Colors.white,
                             ),
-                            const SizedBox(height: 32),
-                            Consumer<AuthProvider>(
-                              builder: (context, auth, _) => ElevatedButton(
+                            obscureText: true,
+                            validator: (value) => value!.length < 6 ? 'Make it strong (6+ chars)' : null,
+                          ),
+                          const SizedBox(height: 40),
+                          Consumer<AuthProvider>(
+                            builder: (context, auth, _) => Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.rose.withOpacity(0.2),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
                                 onPressed: auth.isLoading ? null : _register,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.rose,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                                ),
                                 child: auth.isLoading
-                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.luxeBlack))
-                                    : const Text('CREATE ACCOUNT'),
+                                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                                    : const Text('BLOOM NOW', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 13)),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 48),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "ALREADY A MEMBER? ",
-                          style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26, fontSize: 11, fontWeight: FontWeight.w700),
+                          "Already part of us? ",
+                          style: TextStyle(color: AppTheme.brown.withOpacity(0.4), fontSize: 13, fontWeight: FontWeight.w700),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('SIGN IN', style: TextStyle(color: AppTheme.pureGold, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                          child: const Text('SIGN IN', style: TextStyle(color: AppTheme.rose, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
