@@ -1,27 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User rules
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Chat Room rules
-    match /chat_rooms/{chatRoomId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.users;
-      allow create: if request.auth != null; // Ideally check if user is participant
-      allow update: if request.auth != null && request.auth.uid in resource.data.users;
-      
-      match /messages/{messageId} {
-        allow read: if request.auth != null; // Parent rule should cover, but explicit is good. 
-        // Actually, parent read rule on chat_rooms doc doesn't automatically cascade to subcollections for read unless using recursive wildcard.
-        // But we can check if user is in the chat room users list.
-        // However, accessing parent data in subcollection rule is expensive/tricky.
-        // A simpler rule for now: allow read/write if authenticated. 
-        // For production, we should store participants in message or use get() to check parent.
-        allow read, write: if request.auth != null; 
-      }
+    // Allow authenticated users read/write access to all collections
+    // This is for debugging the "Auth not working" issue
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
