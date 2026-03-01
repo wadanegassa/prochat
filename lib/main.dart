@@ -8,12 +8,14 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/theme_provider.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService().initialize();
   runApp(const MyApp());
 }
 
@@ -149,7 +151,7 @@ class AuthWrapper extends StatelessWidget {
                           child: Text(
                             'BACK TO ENTRANCE',
                             style: TextStyle(
-                              color: AppTheme.brown.withOpacity(0.5),
+                              color: AppTheme.brown.withValues(alpha: 0.5),
                               fontWeight: FontWeight.w900,
                               fontSize: 11,
                               letterSpacing: 2,
