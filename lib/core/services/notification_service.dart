@@ -4,6 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationService {
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
+
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -17,10 +21,10 @@ class NotificationService {
       sound: true,
     );
 
-    // Get token
+    // Get token and save if user is already logged in
     String? token = await _fcm.getToken();
     if (token != null) {
-      await _saveTokenToFirestore(token);
+      _saveTokenToFirestore(token);
     }
 
     // Listen to token refreshes
@@ -42,9 +46,20 @@ class NotificationService {
   Future<void> _saveTokenToFirestore(String token) async {
     final user = _auth.currentUser;
     if (user != null) {
-      await _firestore.collection('users').doc(user.uid).update({
-        'fcmToken': token,
-      });
+      try {
+        await _firestore.collection('users').doc(user.uid).set({
+          'fcmToken': token,
+        }, SetOptions(merge: true));
+      } catch (e) {
+        print('Error saving token: $e');
+      }
+    }
+  }
+
+  Future<void> updateToken() async {
+    String? token = await _fcm.getToken();
+    if (token != null) {
+      await _saveTokenToFirestore(token);
     }
   }
 
