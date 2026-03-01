@@ -57,7 +57,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.edit_rounded, color: AppTheme.pureGold),
+              leading: const Icon(Icons.edit_rounded, color: AppTheme.rose),
               title: const Text('EDIT MESSAGE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 1)),
               onTap: () {
                 Navigator.pop(context);
@@ -83,8 +83,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.luxeBlack,
-        title: const Text('DELETE GROUP MESSAGE?', style: TextStyle(color: AppTheme.pureGold, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
+        backgroundColor: AppTheme.deepBrown,
+        title: const Text('DELETE GROUP MESSAGE?', style: TextStyle(color: AppTheme.rose, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
         content: const Text('THIS ACTION CANNOT BE UNDONE.', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.w600)),
         actions: [
           TextButton(
