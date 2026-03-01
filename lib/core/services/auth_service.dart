@@ -26,7 +26,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('Sign in error: $e');
+      // Log error internally if needed
       rethrow;
     }
   }
@@ -58,7 +58,7 @@ class AuthService {
         } catch (e) {
           // If Firestore write fails (e.g. permission denied), cleanup the auth user 
           // to allow the user to try again with the same email.
-          print('Firestore write failed during registration, cleaning up auth user...');
+          // Firestore write failed during registration, cleaning up auth user...
           await user.delete();
           rethrow;
         }
@@ -66,7 +66,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('Registration error: $e');
+      // Log error internally if needed
       rethrow;
     }
   }
@@ -80,7 +80,7 @@ class AuthService {
         });
       }
     } catch (e) {
-      print('Error updating status during sign out: $e');
+      // Log error internally if needed
     }
     await _auth.signOut();
   }
@@ -94,7 +94,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('Get user details error: $e');
+      // Log error internally if needed
       return null;
     }
   }

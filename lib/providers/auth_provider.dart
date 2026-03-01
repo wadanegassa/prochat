@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/models/user_model.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/notification_service.dart';
@@ -7,8 +9,9 @@ import '../core/services/notification_service.dart';
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   UserModel? _userModel;
-  bool _isLoading = true; // Initialize to true for initial check
+  bool _isLoading = true;
   String? _errorMessage;
+  StreamSubscription<DocumentSnapshot>? _userDocSubscription;
 
   UserModel? get userModel => _userModel;
   bool get isLoading => _isLoading;
@@ -21,12 +24,29 @@ class AuthProvider with ChangeNotifier {
     });
   }
 
+  /// Subscribes to live Firestore changes so bio/photoUrl edits update the UI immediately.
+  void _subscribeToUserDoc(String uid) {
+    _userDocSubscription?.cancel();
+    _userDocSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        _userModel = UserModel.fromDocument(snapshot);
+        notifyListeners();
+      }
+    });
+  }
+
   Future<void> _onAuthStateChanged(User? user) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     if (user == null) {
+      _userDocSubscription?.cancel();
+      _userDocSubscription = null;
       _userModel = null;
       _isLoading = false;
       notifyListeners();
@@ -38,6 +58,8 @@ class AuthProvider with ChangeNotifier {
           _userModel = await _authService.getUserDetails(user.uid);
           if (_userModel != null) {
             NotificationService().initialize();
+            // Start live listener so profile edits (bio, photoUrl, name) reflect instantly
+            _subscribeToUserDoc(user.uid);
             break;
           }
         } catch (e) {
@@ -121,6 +143,8 @@ class AuthProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
+      _userDocSubscription?.cancel();
+      _userDocSubscription = null;
       await _authService.signOut();
       _userModel = null;
     } catch (e) {

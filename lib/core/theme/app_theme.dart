@@ -9,6 +9,8 @@ class AppTheme {
   static const Color deepBrown = Color(0xFF3D342F);
   static const Color cream = Color(0xFFFDF8F5);
   static const Color softGrey = Color(0xFFE5E5E5);
+  static const Color vibrantBlue = Color(0xFF0A78FF);
+  static const Color darkBg = Color(0xFF0B0F1A); // Cooler deep navy/slate
 
   static ThemeData get lightTheme {
     return ThemeData.light().copyWith(
@@ -21,6 +23,7 @@ class AppTheme {
         surface: Colors.white,
         onSurface: brown,
         surfaceContainerHigh: softGrey,
+        tertiary: vibrantBlue,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -36,7 +39,7 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
-        selectedItemColor: rose,
+        selectedItemColor: vibrantBlue,
         unselectedItemColor: brown.withValues(alpha: 0.3),
         elevation: 0,
         type: BottomNavigationBarType.fixed,
@@ -52,31 +55,33 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData.dark().copyWith(
       primaryColor: rose,
-      scaffoldBackgroundColor: deepBrown,
+      scaffoldBackgroundColor: darkBg,
       colorScheme: const ColorScheme.dark(
         primary: rose,
         secondary: sage,
         onPrimary: Colors.white,
-        surface: brown,
-        onSurface: peach,
-        surfaceContainerHigh: deepBrown,
+        surface: Color(0xFF161B2E), // Cool navy surface
+        onSurface: Color(0xFFE0E0E0), // Premium Light Grey for primary text
+        surfaceContainerHigh: Color(0xFF1E253D), // Cooler container
+        onSurfaceVariant: Color(0xFF9E9E9E), // Dim Grey for secondary text
+        tertiary: vibrantBlue,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
-          color: peach,
+          color: Color(0xFFE0E0E0), // Light Grey
           fontSize: 22,
           fontWeight: FontWeight.w900,
           letterSpacing: -0.5,
         ),
-        iconTheme: IconThemeData(color: peach, size: 22),
+        iconTheme: IconThemeData(color: Color(0xFFE0E0E0), size: 22),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: deepBrown,
-        selectedItemColor: peach,
-        unselectedItemColor: Colors.white.withValues(alpha: 0.2),
+        backgroundColor: darkBg,
+        selectedItemColor: vibrantBlue,
+        unselectedItemColor: Color(0xFF9E9E9E).withValues(alpha: 0.5), // Dim Grey
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
@@ -91,22 +96,22 @@ class AppTheme {
   static InputDecorationTheme _inputDecoration({required bool isDark}) {
     return InputDecorationTheme(
       filled: true,
-      fillColor: isDark ? brown.withValues(alpha: 0.4) : softGrey.withValues(alpha: 0.35),
+      fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF1F4F7),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(24),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(24),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: rose, width: 1.5),
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: vibrantBlue, width: 1.5),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       hintStyle: TextStyle(
-        color: isDark ? peach.withValues(alpha: 0.3) : brown.withValues(alpha: 0.3), 
+        color: isDark ? Colors.white.withValues(alpha: 0.3) : brown.withValues(alpha: 0.3), 
         fontWeight: FontWeight.w600,
         fontSize: 15,
       ),
