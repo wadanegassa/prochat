@@ -65,9 +65,26 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return Scaffold(
       body: Stack(
         children: [
-          // Background subtle gold glow
+          // Earthy background with organic glow
           Positioned(
-            top: -100,
+            top: -150,
+            left: -100,
+            child: Container(
+              width: 500,
+              height: 500,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppTheme.sage.withOpacity(0.12),
+                    AppTheme.sage.withOpacity(0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
             right: -100,
             child: Container(
               width: 400,
@@ -76,20 +93,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.pureGold.withOpacity(0.08),
-                    AppTheme.pureGold.withOpacity(0.0),
+                    AppTheme.rose.withOpacity(0.08),
+                    AppTheme.rose.withOpacity(0.0),
                   ],
                 ),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                child: Container(color: Colors.transparent),
               ),
             ),
           ),
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Column(
@@ -97,89 +110,120 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 60),
+                    // Organic Logo Placeholder
+                    Center(
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppTheme.rose.withOpacity(0.1),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(10),
+                            bottomLeft: Radius.circular(10),
+                            bottomRight: Radius.circular(30),
+                          ),
+                        ),
+                        child: const Icon(Icons.bubble_chart_rounded, color: AppTheme.rose, size: 40),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
                     const Text(
-                      'PROCHAT',
+                      'prochat',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 42,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 8,
-                        color: AppTheme.pureGold,
+                        color: AppTheme.brown,
+                        letterSpacing: -1,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'JOIN THE ELITE',
+                    const Text(
+                      'A natural way to connect.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 4,
-                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.rose,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 60),
-                    Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardTheme.color,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: AppTheme.pureGold.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'EMAIL ADDRESS',
-                                prefixIcon: Icon(Icons.email_outlined, size: 20),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) => value!.isEmpty ? 'Enter email' : null,
+                    const SizedBox(height: 48),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextFormField(
+                            controller: _emailController,
+                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
+                            decoration: const InputDecoration(
+                              labelText: 'EMAIL',
+                              prefixIcon: Icon(Icons.alternate_email_rounded, size: 18),
+                              fillColor: Colors.white,
                             ),
-                            const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _passwordController,
-                              decoration: const InputDecoration(
-                                labelText: 'PASSWORD',
-                                prefixIcon: Icon(Icons.lock_outline_rounded, size: 20),
-                              ),
-                              obscureText: true,
-                              validator: (value) => value!.length < 6 ? 'Min 6 chars' : null,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) => value!.isEmpty ? 'What\'s your email?' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _passwordController,
+                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
+                            decoration: const InputDecoration(
+                              labelText: 'PASSWORD',
+                              prefixIcon: Icon(Icons.password_rounded, size: 18),
+                              fillColor: Colors.white,
                             ),
-                            const SizedBox(height: 32),
-                            Consumer<AuthProvider>(
-                              builder: (context, auth, _) => ElevatedButton(
+                            obscureText: true,
+                            validator: (value) => value!.length < 6 ? 'A bit longer, please (6+)' : null,
+                          ),
+                          const SizedBox(height: 40),
+                          Consumer<AuthProvider>(
+                            builder: (context, auth, _) => Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.rose.withOpacity(0.25),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
                                 onPressed: auth.isLoading ? null : _login,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.rose,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                                ),
                                 child: auth.isLoading
-                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.luxeBlack))
-                                    : const Text('SIGN IN'),
+                                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                                    : const Text('ENTER THE UNIVERSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 13)),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 48),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "NEW HERE? ",
-                          style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26, fontSize: 11, fontWeight: FontWeight.w700),
+                          "New to the circle? ",
+                          style: TextStyle(color: AppTheme.brown.withOpacity(0.4), fontSize: 13, fontWeight: FontWeight.w700),
                         ),
                         TextButton(
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                          child: const Text('CREATE ACCOUNT', style: TextStyle(color: AppTheme.pureGold, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                          child: const Text('JOIN US', style: TextStyle(color: AppTheme.rose, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
