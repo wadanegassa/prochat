@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import '../../../core/models/message_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chat_provider.dart';
@@ -49,7 +48,6 @@ class _ChatInputState extends State<ChatInput> {
 
       if (currentUser != null) {
         if (widget.editingMessageId != null) {
-          // Update message
           if (widget.groupId != null && widget.receiverId.isEmpty) {
             await chatProvider.updateGroupMessage(widget.groupId!, widget.editingMessageId!, text);
           } else {
@@ -58,22 +56,10 @@ class _ChatInputState extends State<ChatInput> {
           }
           if (widget.onCancelEditing != null) widget.onCancelEditing!();
         } else {
-          // Send new message
           if (widget.groupId != null && widget.receiverId.isEmpty) {
-            await chatProvider.sendGroupMessage(
-              widget.groupId!,
-              widget.senderId,
-              currentUser.name,
-              text,
-            );
+            await chatProvider.sendGroupMessage(widget.groupId!, widget.senderId, currentUser.name, text);
           } else {
-            await chatProvider.sendMessage(
-              widget.senderId,
-              currentUser.name,
-              widget.receiverId,
-              text,
-              MessageType.text,
-            );
+            await chatProvider.sendMessage(widget.senderId, currentUser.name, widget.receiverId, text, MessageType.text);
           }
         }
         _controller.clear();
@@ -84,106 +70,97 @@ class _ChatInputState extends State<ChatInput> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.editingMessageId != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        border: Border(top: BorderSide(color: AppTheme.pureGold.withOpacity(0.05))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isEditing)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12, left: 8, right: 8),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  const Icon(Icons.edit_rounded, color: AppTheme.pureGold, size: 16),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'EDITING MESSAGE',
-                          style: TextStyle(
-                            color: AppTheme.pureGold,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        Text(
-                          widget.editingText ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white38 : Colors.black38,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 20, color: Colors.white24),
-                    onPressed: widget.onCancelEditing,
-                  ),
+                  const Icon(Icons.edit_rounded, color: AppTheme.rose, size: 16),
+                  const SizedBox(width: 8),
+                  const Text('REVISING', style: TextStyle(color: AppTheme.rose, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                  const Spacer(),
+                  GestureDetector(child: const Icon(Icons.close_rounded, size: 18, color: AppTheme.brown), onTap: widget.onCancelEditing),
                 ],
               ),
             ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      controller: _controller,
-                      style: const TextStyle(fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: isEditing ? 'EDIT MESSAGE...' : 'WRITE A MESSAGE...',
-                        hintStyle: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1,
+          Row(
+            children: [
+              _buildIconButton(Icons.add_rounded, isDark),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.brown.withValues(alpha: 0.4) : AppTheme.softGrey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          maxLines: 4,
+                          minLines: 1,
+                          style: TextStyle(fontSize: 15, color: isDark ? AppTheme.peach : AppTheme.brown, fontWeight: FontWeight.w600),
+                          decoration: const InputDecoration(
+                            hintText: 'Message...',
+                            filled: false,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      textCapitalization: TextCapitalization.sentences,
-                    ),
+                      _buildIconButton(Icons.emoji_emotions_outlined, isDark, size: 22),
+                      _buildIconButton(Icons.mic_none_rounded, isDark, size: 22),
+                      const SizedBox(width: 4),
+                    ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: _sendMessage,
-                  child: Container(
-                    margin: const EdgeInsets.all(4),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.pureGold,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      isEditing ? Icons.check_rounded : Icons.send_rounded,
-                      color: AppTheme.luxeBlack,
-                      size: 20,
-                    ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _sendMessage,
+                child: Container(
+                  height: 48,
+                  width: 48,
+                  decoration: BoxDecoration(
+                    color: AppTheme.sage,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: AppTheme.sage.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Icon(
+                    isEditing ? Icons.check_rounded : Icons.near_me_rounded,
+                    color: Colors.white,
+                    size: 20,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIconButton(IconData icon, bool isDark, {double size = 24}) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: const BoxDecoration(shape: BoxShape.circle),
+      child: Icon(
+        icon,
+        color: isDark ? AppTheme.peach.withValues(alpha: 0.5) : AppTheme.brown.withValues(alpha: 0.3),
+        size: size,
       ),
     );
   }
