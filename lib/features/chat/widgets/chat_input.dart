@@ -42,6 +42,7 @@ class _ChatInputState extends State<ChatInput> {
   void _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
+      _controller.clear();
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final currentUser = authProvider.userModel;
@@ -62,7 +63,6 @@ class _ChatInputState extends State<ChatInput> {
             await chatProvider.sendMessage(widget.senderId, currentUser.name, widget.receiverId, text, MessageType.text);
           }
         }
-        _controller.clear();
       }
     }
   }
@@ -89,14 +89,16 @@ class _ChatInputState extends State<ChatInput> {
                   const SizedBox(width: 8),
                   const Text('REVISING', style: TextStyle(color: AppTheme.rose, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
                   const Spacer(),
-                  GestureDetector(child: const Icon(Icons.close_rounded, size: 18, color: AppTheme.brown), onTap: widget.onCancelEditing),
+                  GestureDetector(
+                    onTap: widget.onCancelEditing,
+                    child: Icon(Icons.close_rounded, size: 18,
+                        color: isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.5)),
+                  ),
                 ],
               ),
             ),
           Row(
             children: [
-              _buildIconButton(Icons.add_rounded, isDark),
-              const SizedBox(width: 8),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
@@ -111,7 +113,9 @@ class _ChatInputState extends State<ChatInput> {
                           controller: _controller,
                           maxLines: 4,
                           minLines: 1,
-                          style: TextStyle(fontSize: 15, color: isDark ? AppTheme.peach : AppTheme.brown, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 15, color: isDark ? const Color(0xFFE0E0E0) : AppTheme.brown, fontWeight: FontWeight.w600),
+                          onSubmitted: (_) => _sendMessage(),
+                          textInputAction: TextInputAction.send,
                           decoration: const InputDecoration(
                             hintText: 'Message...',
                             filled: false,
@@ -119,9 +123,7 @@ class _ChatInputState extends State<ChatInput> {
                           ),
                         ),
                       ),
-                      _buildIconButton(Icons.emoji_emotions_outlined, isDark, size: 22),
-                      _buildIconButton(Icons.mic_none_rounded, isDark, size: 22),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 16),
                     ],
                   ),
                 ),
@@ -149,18 +151,6 @@ class _ChatInputState extends State<ChatInput> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildIconButton(IconData icon, bool isDark, {double size = 24}) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(shape: BoxShape.circle),
-      child: Icon(
-        icon,
-        color: isDark ? AppTheme.peach.withValues(alpha: 0.5) : AppTheme.brown.withValues(alpha: 0.3),
-        size: size,
       ),
     );
   }
