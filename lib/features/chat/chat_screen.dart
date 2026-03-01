@@ -46,32 +46,63 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _onMessageLongPress(MessageModel message, bool isMe) {
     if (!isMe) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF161B2E) : Colors.white;
+    final textColor = isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
+    final divColor = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : AppTheme.brown.withValues(alpha: 0.06);
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
+          color: cardColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.brown.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
+            Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: divColor, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.edit_rounded, color: AppTheme.rose),
-              title: const Text('EDIT MESSAGE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1, color: AppTheme.brown)),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.rose.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.edit_rounded, color: AppTheme.rose, size: 18),
+              ),
+              title: Text('Edit Message',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: textColor)),
               onTap: () {
                 Navigator.pop(context);
                 _startEditing(message);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-              title: const Text('DELETE MESSAGE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1, color: Colors.redAccent)),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child:
+                    const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+              ),
+              title: const Text('Delete Message',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 15, color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(message);
@@ -85,27 +116,46 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _confirmDelete(MessageModel message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF161B2E) : Colors.white;
+    final textColor = isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
+    final subColor = isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.5);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.deepBrown,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('DELETE MESSAGE?', style: TextStyle(color: AppTheme.rose, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
-        content: const Text('THIS ACTION CANNOT BE UNDONE.', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.w600)),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: Text('Delete Message?',
+            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w900)),
+        content: Text('This cannot be undone.',
+            style: TextStyle(color: subColor, fontSize: 14)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel',
+                style: TextStyle(color: subColor, fontWeight: FontWeight.bold)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-              final roomId = ChatService.getChatRoomId(authProvider.userModel!.uid, widget.receiverId);
-              chatProvider.deleteMessage(roomId, message.id, true, authProvider.userModel!.uid);
-              Navigator.pop(context);
+              final authProvider =
+                  Provider.of<AuthProvider>(context, listen: false);
+              final chatProvider =
+                  Provider.of<ChatProvider>(context, listen: false);
+              final roomId = ChatService.getChatRoomId(
+                  authProvider.userModel!.uid, widget.receiverId);
+              chatProvider.deleteMessage(
+                  roomId, message.id, true, authProvider.userModel!.uid);
+              Navigator.pop(ctx);
             },
-            child: const Text('DELETE FOR BOTH', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text('Delete',
+                style: TextStyle(fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -185,7 +235,7 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, snapshot) {
           final user = snapshot.data;
           final isOnline = user?.isOnline ?? false;
-          
+
           return Row(
             children: [
               Stack(
@@ -194,15 +244,39 @@ class _ChatScreenState extends State<ChatScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppTheme.sage.withValues(alpha: 0.1),
+                      color: AppTheme.sage.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Center(
-                      child: Text(
-                        widget.receiverName[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w900, fontSize: 16),
-                      ),
-                    ),
+                    child: (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.network(
+                              user.photoUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Center(
+                                child: Text(
+                                  widget.receiverName.isNotEmpty
+                                      ? widget.receiverName[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                      color: AppTheme.sage,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              widget.receiverName.isNotEmpty
+                                  ? widget.receiverName[0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                  color: AppTheme.sage,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16),
+                            ),
+                          ),
                   ),
                   if (isOnline)
                     Positioned(
@@ -214,38 +288,51 @@ class _ChatScreenState extends State<ChatScreen> {
                         decoration: BoxDecoration(
                           color: AppTheme.sage,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                          border: Border.all(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              width: 2),
                         ),
                       ),
                     ),
                 ],
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.receiverName,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-                  ),
-                  Text(
-                    isOnline ? 'Online' : 'Offline',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isOnline ? AppTheme.sage : AppTheme.brown.withValues(alpha: 0.4),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.receiverName,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w900),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    Text(
+                      isOnline ? 'Online' : 'Offline',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isOnline
+                            ? AppTheme.sage
+                            : AppTheme.brown.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           );
         },
       ),
       actions: [
-        IconButton(icon: const Icon(Icons.call_rounded, size: 22), onPressed: () {}),
-        IconButton(icon: const Icon(Icons.videocam_rounded, size: 22), onPressed: () {}),
-        IconButton(icon: const Icon(Icons.more_vert_rounded, size: 22), onPressed: () {}),
+        IconButton(
+            icon: const Icon(Icons.more_vert_rounded, size: 22),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('More options coming soon')),
+              );
+            }),
         const SizedBox(width: 8),
       ],
     );
