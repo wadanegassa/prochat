@@ -6,12 +6,14 @@ import '../../../core/theme/app_theme.dart';
 class MessageBubble extends StatelessWidget {
   final MessageModel message;
   final bool isMe;
+  final String? senderName;
   final VoidCallback? onLongPress;
 
   const MessageBubble({
     super.key,
     required this.message,
     required this.isMe,
+    this.senderName,
     this.onLongPress,
   });
 
@@ -40,14 +42,32 @@ class MessageBubble extends StatelessWidget {
                     bottomRight: Radius.circular(isMe ? 4 : 20),
                   ),
                 ),
-                child: Text(
-                  message.text,
-                  style: TextStyle(
-                    color: _getTextColor(isDark),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    height: 1.4,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!isMe && senderName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          senderName!,
+                          style: const TextStyle(
+                            color: AppTheme.rose,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      message.text,
+                      style: TextStyle(
+                        color: _getTextColor(isDark),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 4),
@@ -59,7 +79,7 @@ class MessageBubble extends StatelessWidget {
                     Text(
                       DateFormat('h:mm a').format(message.timestamp),
                       style: TextStyle(
-                        color: AppTheme.brown.withValues(alpha: 0.3),
+                        color: isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.3),
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                       ),
@@ -96,7 +116,7 @@ class MessageBubble extends StatelessWidget {
     if (isMe) {
       return Colors.white;
     } else {
-      return isDark ? AppTheme.peach : AppTheme.brown;
+      return isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
     }
   }
 }

@@ -4,6 +4,8 @@ import '../../core/models/message_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/models/group_model.dart';
+import '../../core/services/chat_service.dart';
 import 'widgets/chat_input.dart';
 import 'widgets/message_bubble.dart';
 
@@ -41,38 +43,72 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   void _onMessageLongPress(MessageModel message, bool isMe) {
     if (!isMe) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF161B2E) : Colors.white;
+    final textColor = isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
+    final divColor = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : AppTheme.brown.withValues(alpha: 0.06);
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: cardColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 12),
+            Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: divColor, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 8),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.edit_rounded, color: AppTheme.rose),
-              title: const Text('EDIT MESSAGE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 1)),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.vibrantBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.edit_rounded,
+                    color: AppTheme.vibrantBlue, size: 18),
+              ),
+              title: Text('Edit Message',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: textColor)),
               onTap: () {
                 Navigator.pop(context);
                 _startEditing(message);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-              title: const Text('DELETE MESSAGE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 1, color: Colors.redAccent)),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.delete_outline_rounded,
+                    color: Colors.red, size: 18),
+              ),
+              title: const Text('Delete Message',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(message);
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -80,30 +116,46 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   void _confirmDelete(MessageModel message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF161B2E) : Colors.white;
+    final textColor = isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
+    final subColor =
+        isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.5);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.deepBrown,
-        title: const Text('DELETE GROUP MESSAGE?', style: TextStyle(color: AppTheme.rose, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
-        content: const Text('THIS ACTION CANNOT BE UNDONE.', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.w600)),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: Text('Delete Message?',
+            style: TextStyle(
+                color: textColor, fontSize: 17, fontWeight: FontWeight.w900)),
+        content: Text('This cannot be undone.',
+            style: TextStyle(color: subColor, fontSize: 14)),
         actions: [
           TextButton(
-            onPressed: () {
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-              chatProvider.deleteGroupMessage(widget.groupId, message.id, false, authProvider.userModel!.uid);
-              Navigator.pop(context);
-            },
-            child: const Text('DELETE FOR ME', style: TextStyle(color: Colors.white38, fontWeight: FontWeight.w900, fontSize: 11)),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel',
+                style: TextStyle(color: subColor, fontWeight: FontWeight.bold)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-              chatProvider.deleteGroupMessage(widget.groupId, message.id, true, authProvider.userModel!.uid);
-              Navigator.pop(context);
+              final authProvider =
+                  Provider.of<AuthProvider>(context, listen: false);
+              final chatProvider =
+                  Provider.of<ChatProvider>(context, listen: false);
+              chatProvider.deleteGroupMessage(
+                  widget.groupId, message.id, false, authProvider.userModel!.uid);
+              Navigator.pop(ctx);
             },
-            child: const Text('DELETE FOR BOTH', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 11)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text('Delete',
+                style: TextStyle(fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -119,17 +171,55 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        flexibleSpace: Container(color: Theme.of(context).scaffoldBackgroundColor),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        titleSpacing: 0,
         title: Row(
           children: [
-            const CircleAvatar(
-              backgroundColor: Colors.blueAccent,
-              child: Icon(Icons.group, color: Colors.white),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.vibrantBlue.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.groups_rounded,
+                  color: AppTheme.vibrantBlue, size: 24),
             ),
-            const SizedBox(width: 10),
-            Text(widget.groupName),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.groupName,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w900),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  StreamBuilder<GroupModel?>(
+                    stream: ChatService().getGroupStream(widget.groupId),
+                    builder: (context, snapshot) {
+                      final membersCount = snapshot.data?.members.length ?? 0;
+                      return Text(
+                        '$membersCount members',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.brown.withValues(alpha: 0.45),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
+        centerTitle: false,
       ),
       body: Column(
         children: [
@@ -142,6 +232,19 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
                 final messages = snapshot.data ?? [];
 
+                if (messages.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.forum_outlined, size: 48, color: const Color(0xFF424242)),
+                        const SizedBox(height: 16),
+                        Text('No messages yet', style: TextStyle(color: const Color(0xFF9E9E9E))),
+                      ],
+                    ),
+                  );
+                }
+
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   itemCount: messages.length,
@@ -150,7 +253,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     return MessageBubble(
                       message: message,
                       isMe: message.senderId == currentUser.uid,
-                      onLongPress: () => _onMessageLongPress(message, message.senderId == currentUser.uid),
+                      senderName: message.senderName,
+                      onLongPress: () => _onMessageLongPress(
+                          message, message.senderId == currentUser.uid),
                     );
                   },
                   reverse: true,
