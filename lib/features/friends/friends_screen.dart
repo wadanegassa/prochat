@@ -6,14 +6,14 @@ import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../chat/chat_screen.dart';
 
-class FriendsScreen extends StatefulWidget {
-  const FriendsScreen({super.key});
+class ContactsScreen extends StatefulWidget {
+  const ContactsScreen({super.key});
 
   @override
-  State<FriendsScreen> createState() => _FriendsScreenState();
+  State<ContactsScreen> createState() => _ContactsScreenState();
 }
 
-class _FriendsScreenState extends State<FriendsScreen> {
+class _ContactsScreenState extends State<ContactsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ChatService _chatService = ChatService();
 
@@ -37,7 +37,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            _buildSearchAndFilter(isDark),
+            _buildSearchField(isDark),
             Expanded(
               child: StreamBuilder<List<UserModel>>(
                 stream: _chatService.getUsers(),
@@ -53,7 +53,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                   if (users.isEmpty) return _buildEmptyState();
 
                   return ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.only(bottom: 100),
                     itemCount: users.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) => _buildModernUserCard(context, users[index], isDark),
@@ -69,65 +69,27 @@ class _FriendsScreenState extends State<FriendsScreen> {
 
   PreferredSizeWidget _buildAppBar(bool isDark) {
     return AppBar(
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: _buildCircleAction(Icons.menu_rounded, isDark),
-      ),
-      title: const Text('Friends'),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: _buildCircleAction(Icons.search_rounded, isDark),
-        ),
+      title: const Text('Contacts'),
+      actions: const [
+        SizedBox(width: 16),
       ],
     );
   }
 
-  Widget _buildCircleAction(IconData icon, bool isDark) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.brown.withValues(alpha: 0.3) : Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.brown.withValues(alpha: 0.05), width: 1),
-      ),
-      child: Icon(icon, color: isDark ? AppTheme.peach : AppTheme.brown, size: 20),
-    );
-  }
-
-  Widget _buildSearchAndFilter(bool isDark) {
+  Widget _buildSearchField(bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: (v) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Search friends...',
-                prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.rose, size: 22),
-                fillColor: isDark ? AppTheme.brown.withValues(alpha: 0.3) : const Color(0xFFF5F5F7),
-              ),
-            ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: 'Find someone new...',
+          prefixIcon: Icon(Icons.search_rounded, 
+            color: isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.3), 
+            size: 22
           ),
-          const SizedBox(width: 12),
-          _buildFilterButton(isDark),
-        ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildFilterButton(bool isDark) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.brown.withValues(alpha: 0.3) : const Color(0xFFF5F5F7),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Icon(Icons.tune_rounded, color: isDark ? AppTheme.peach : AppTheme.brown, size: 22),
     );
   }
 
@@ -135,8 +97,15 @@ class _FriendsScreenState extends State<FriendsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.brown.withValues(alpha: 0.2) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -144,26 +113,57 @@ class _FriendsScreenState extends State<FriendsScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppTheme.peach.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(24),
+              color: AppTheme.peach.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Center(
-              child: Text(
-                user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                style: const TextStyle(color: AppTheme.rose, fontWeight: FontWeight.w900, fontSize: 18),
-              ),
-            ),
+            child: (user.photoUrl.isNotEmpty)
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      user.photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Text(
+                          user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                          style: const TextStyle(
+                              color: AppTheme.rose,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                          color: AppTheme.rose,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18),
+                    ),
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.brown)),
+                Text(
+                  user.name, 
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900, 
+                    fontSize: 16, 
+                    color: isDark ? const Color(0xFFE0E0E0) : AppTheme.brown,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
-                  user.isOnline ? 'Active now' : 'Seen recently',
-                  style: TextStyle(color: user.isOnline ? AppTheme.sage : AppTheme.brown.withValues(alpha: 0.3), fontSize: 12, fontWeight: FontWeight.w800),
+                  user.isOnline ? 'Online' : 'Offline',
+                  style: TextStyle(
+                    color: user.isOnline ? AppTheme.sage : (isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.3)), 
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
@@ -173,12 +173,12 @@ class _FriendsScreenState extends State<FriendsScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(receiverId: user.uid, receiverName: user.name, receiverPhotoUrl: user.photoUrl)));
             },
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.rose.withValues(alpha: 0.1),
+                color: AppTheme.vibrantBlue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.chat_bubble_rounded, color: AppTheme.rose, size: 18),
+              child: const Icon(Icons.chat_bubble_rounded, color: AppTheme.vibrantBlue, size: 20),
             ),
           ),
         ],
