@@ -45,7 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _onMessageLongPress(MessageModel message, bool isMe) {
-    if (!isMe) return; // Only allow editing/deleting own messages
+    if (!isMe) return;
 
     showModalBottomSheet(
       context: context,
@@ -53,17 +53,17 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 8),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.brown.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.edit_rounded, color: AppTheme.pureGold),
-              title: const Text('EDIT MESSAGE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 1)),
+              leading: const Icon(Icons.edit_rounded, color: AppTheme.rose),
+              title: const Text('EDIT MESSAGE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1, color: AppTheme.brown)),
               onTap: () {
                 Navigator.pop(context);
                 _startEditing(message);
@@ -71,13 +71,13 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-              title: const Text('DELETE MESSAGE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 1, color: Colors.redAccent)),
+              title: const Text('DELETE MESSAGE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1, color: Colors.redAccent)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(message);
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -88,23 +88,14 @@ class _ChatScreenState extends State<ChatScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.luxeBlack,
-        title: const Text('DELETE MESSAGE?', style: TextStyle(color: AppTheme.pureGold, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
+        backgroundColor: AppTheme.deepBrown,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('DELETE MESSAGE?', style: TextStyle(color: AppTheme.rose, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
         content: const Text('THIS ACTION CANNOT BE UNDONE.', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.w600)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.w900, fontSize: 11)),
-          ),
-          TextButton(
-            onPressed: () {
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-              final roomId = ChatService.getChatRoomId(authProvider.userModel!.uid, widget.receiverId);
-              chatProvider.deleteMessage(roomId, message.id, false, authProvider.userModel!.uid);
-              Navigator.pop(context);
-            },
-            child: const Text('DELETE FOR ME', style: TextStyle(color: Colors.white38, fontWeight: FontWeight.w900, fontSize: 11)),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () {
@@ -114,7 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
               chatProvider.deleteMessage(roomId, message.id, true, authProvider.userModel!.uid);
               Navigator.pop(context);
             },
-            child: const Text('DELETE FOR BOTH', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 11)),
+            child: const Text('DELETE FOR BOTH', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -144,72 +135,15 @@ class _ChatScreenState extends State<ChatScreen> {
     if (currentUser == null) return const SizedBox.shrink();
 
     return Scaffold(
-      appBar: AppBar(
-        flexibleSpace: Container(color: Theme.of(context).scaffoldBackgroundColor),
-        title: StreamBuilder<UserModel?>(
-          stream: _chatService.getUserStream(widget.receiverId),
-          builder: (context, snapshot) {
-            final user = snapshot.data;
-            final isOnline = user?.isOnline ?? false;
-            final name = user?.name ?? widget.receiverName;
-            final photoUrl = user?.photoUrl ?? widget.receiverPhotoUrl;
-
-            return Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(1),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.pureGold.withOpacity(0.1), width: 1),
-                  ),
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: AppTheme.pureGold.withOpacity(0.05),
-                    backgroundImage: photoUrl.isNotEmpty
-                        ? NetworkImage(photoUrl)
-                        : null,
-                    child: photoUrl.isEmpty
-                        ? Text(name[0].toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppTheme.pureGold))
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                      ),
-                      Text(
-                        isOnline ? 'ONLINE' : 'OFFLINE',
-                        style: TextStyle(
-                          fontSize: 9, 
-                          color: isOnline ? AppTheme.pureGold : Colors.white24, 
-                          fontWeight: FontWeight.w900, 
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }
-        ),
-      ),
+      appBar: _buildAppBar(context),
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<List<MessageModel>>(
               stream: chatProvider.getMessages(currentUser.uid, widget.receiverId),
               builder: (context, snapshot) {
-                if (snapshot.hasError) return const Center(child: Text('Error loading messages'));
                 if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-
                 final messages = snapshot.data ?? [];
-                _markAsRead();
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -236,6 +170,84 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        onPressed: () => Navigator.pop(context),
+      ),
+      titleSpacing: 0,
+      title: StreamBuilder<UserModel?>(
+        stream: _chatService.getUserStream(widget.receiverId),
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+          final isOnline = user?.isOnline ?? false;
+          
+          return Row(
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppTheme.sage.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.receiverName[0].toUpperCase(),
+                        style: const TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w900, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  if (isOnline)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: AppTheme.sage,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.receiverName,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                  ),
+                  Text(
+                    isOnline ? 'Online' : 'Offline',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isOnline ? AppTheme.sage : AppTheme.brown.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+      actions: [
+        IconButton(icon: const Icon(Icons.call_rounded, size: 22), onPressed: () {}),
+        IconButton(icon: const Icon(Icons.videocam_rounded, size: 22), onPressed: () {}),
+        IconButton(icon: const Icon(Icons.more_vert_rounded, size: 22), onPressed: () {}),
+        const SizedBox(width: 8),
+      ],
     );
   }
 }
