@@ -5,6 +5,7 @@ class ChatRoom {
   final List<String> users;
   final String lastMessage;
   final int lastMessageTime;
+  final String lastMessageSenderId;
   final int unreadCount;
 
   ChatRoom({
@@ -12,6 +13,7 @@ class ChatRoom {
     required this.users,
     required this.lastMessage,
     required this.lastMessageTime,
+    required this.lastMessageSenderId,
     this.unreadCount = 0,
   });
 
@@ -22,7 +24,8 @@ class ChatRoom {
       users: List<String>.from(data['users'] ?? []),
       lastMessage: data['lastMessage'] ?? '',
       lastMessageTime: data['lastMessageTime'] ?? 0,
-      unreadCount: data['unreadCount'] ?? 0, // Note: This might need a separate stream count if not stored directly
+      lastMessageSenderId: data['lastMessageSenderId'] ?? '',
+      unreadCount: data['unreadCount'] ?? 0,
     );
   }
 }
