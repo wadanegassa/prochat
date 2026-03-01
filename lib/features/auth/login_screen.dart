@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import 'register_screen.dart';
@@ -12,224 +11,275 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
+  late final AnimationController _animCtrl;
+  late final Animation<double> _fadeAnim;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    _animCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 900),
     );
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
-    );
-    _animationController.forward();
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _animCtrl.forward();
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _animationController.dispose();
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    _animCtrl.dispose();
     super.dispose();
   }
 
-  void _login() async {
-    if (_formKey.currentState!.validate()) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      bool success = await authProvider.signIn(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final success = await auth.signIn(
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text.trim(),
+    );
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.errorMessage ?? 'Login failed. Check your credentials.'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
       );
-      if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            content: Text(authProvider.errorMessage ?? 'Login failed. Please check your credentials.'),
-          ),
-        );
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
+    final subColor = isDark
+        ? const Color(0xFF9E9E9E)
+        : AppTheme.brown.withValues(alpha: 0.45);
+
     return Scaffold(
       body: Stack(
         children: [
-          // Earthy background with organic glow
-          Positioned(
-            top: -150,
-            left: -100,
-            child: Container(
-              width: 500,
-              height: 500,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.sage.withOpacity(0.12),
-                    AppTheme.sage.withOpacity(0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -100,
-            right: -100,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.rose.withOpacity(0.08),
-                    AppTheme.rose.withOpacity(0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 60),
-                    // Organic Logo Placeholder
-                    Center(
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: AppTheme.rose.withOpacity(0.1),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(10),
-                            bottomLeft: Radius.circular(10),
-                            bottomRight: Radius.circular(30),
-                          ),
-                        ),
-                        child: const Icon(Icons.bubble_chart_rounded, color: AppTheme.rose, size: 40),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'prochat',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.brown,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'A natural way to connect.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.rose,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextFormField(
-                            controller: _emailController,
-                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
-                            decoration: const InputDecoration(
-                              labelText: 'EMAIL',
-                              prefixIcon: Icon(Icons.alternate_email_rounded, size: 18),
-                              fillColor: Colors.white,
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) => value!.isEmpty ? 'What\'s your email?' : null,
-                          ),
-                          const SizedBox(height: 20),
-                          TextFormField(
-                            controller: _passwordController,
-                            style: const TextStyle(color: AppTheme.brown, fontWeight: FontWeight.w600),
-                            decoration: const InputDecoration(
-                              labelText: 'PASSWORD',
-                              prefixIcon: Icon(Icons.password_rounded, size: 18),
-                              fillColor: Colors.white,
-                            ),
-                            obscureText: true,
-                            validator: (value) => value!.length < 6 ? 'A bit longer, please (6+)' : null,
-                          ),
-                          const SizedBox(height: 40),
-                          Consumer<AuthProvider>(
-                            builder: (context, auth, _) => Container(
-                              height: 60,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(28),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.rose.withOpacity(0.25),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: ElevatedButton(
-                                onPressed: auth.isLoading ? null : _login,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.rose,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                                ),
-                                child: auth.isLoading
-                                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                                    : const Text('ENTER THE UNIVERSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 13)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+          // Background blobs
+          _blob(top: -140, left: -100, size: 440,
+              color: AppTheme.rose.withValues(alpha: isDark ? 0.07 : 0.06)),
+          _blob(bottom: -120, right: -80, size: 380,
+              color: AppTheme.sage.withValues(alpha: isDark ? 0.07 : 0.06)),
+
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: FadeTransition(
+                  opacity: _fadeAnim,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        const SizedBox(height: 32),
+
+                        // Logo
+                        Center(
+                          child: Container(
+                            width: 76,
+                            height: 76,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [AppTheme.rose, AppTheme.peach],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(28),
+                                topRight: Radius.circular(10),
+                                bottomLeft: Radius.circular(10),
+                                bottomRight: Radius.circular(28),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.rose.withValues(alpha: 0.3),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.bubble_chart_rounded,
+                                color: Colors.white, size: 38),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        // Title
                         Text(
-                          "New to the circle? ",
-                          style: TextStyle(color: AppTheme.brown.withOpacity(0.4), fontSize: 13, fontWeight: FontWeight.w700),
+                          'prochat',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w900,
+                            color: textColor,
+                            letterSpacing: -1,
+                          ),
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                          child: const Text('JOIN US', style: TextStyle(color: AppTheme.rose, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                        const SizedBox(height: 6),
+                        Text(
+                          'A natural way to connect.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: subColor,
+                            letterSpacing: 0.3,
+                          ),
                         ),
+                        const SizedBox(height: 44),
+
+                        // Email
+                        TextFormField(
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                          decoration: InputDecoration(
+                            hintText: 'Email address',
+                            prefixIcon: Icon(Icons.alternate_email_rounded,
+                                color: AppTheme.rose, size: 20),
+                          ),
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Email is required' : null,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password
+                        TextFormField(
+                          controller: _passwordCtrl,
+                          obscureText: _obscurePassword,
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                          decoration: InputDecoration(
+                            hintText: 'Password',
+                            prefixIcon: Icon(Icons.lock_outline_rounded,
+                                color: AppTheme.rose, size: 20),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: subColor,
+                                size: 20,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                          validator: (v) =>
+                              v == null || v.length < 6
+                                  ? 'Minimum 6 characters'
+                                  : null,
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Sign In Button
+                        Consumer<AuthProvider>(
+                          builder: (_, auth, __) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: 58,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.rose.withValues(alpha: auth.isLoading ? 0.1 : 0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: auth.isLoading ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.rose,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28)),
+                              ),
+                              child: auth.isLoading
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2.5, color: Colors.white))
+                                  : const Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 16,
+                                          letterSpacing: 0.3),
+                                    ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 36),
+
+                        // Register link
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Don't have an account? ",
+                                style: TextStyle(
+                                    color: subColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600)),
+                            GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen()),
+                              ),
+                              child: const Text(
+                                'Sign Up',
+                                style: TextStyle(
+                                    color: AppTheme.rose,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
                       ],
                     ),
-                    const SizedBox(height: 40),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _blob({double? top, double? bottom, double? left, double? right,
+      required double size, required Color color}) {
+    return Positioned(
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+        ),
       ),
     );
   }
