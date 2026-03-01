@@ -40,15 +40,28 @@ class AuthService {
       );
       User? user = result.user;
       if (user != null) {
+        // Essential: Give a tiny bit of time for the auth token to propagate to Firestore client
+        await Future.delayed(const Duration(milliseconds: 500));
+        
         UserModel newUser = UserModel(
           uid: user.uid,
           name: name,
           email: email,
           photoUrl: '',
+          bio: 'Hey there! I am using ProChat.',
           lastSeen: DateTime.now(),
           isOnline: true,
         );
-        await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
+        
+        try {
+          await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
+        } catch (e) {
+          // If Firestore write fails (e.g. permission denied), cleanup the auth user 
+          // to allow the user to try again with the same email.
+          print('Firestore write failed during registration, cleaning up auth user...');
+          await user.delete();
+          rethrow;
+        }
         return newUser;
       }
       return null;
@@ -59,11 +72,15 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    if (currentUser != null) {
-      await _firestore.collection('users').doc(currentUser!.uid).update({
-        'isOnline': false,
-        'lastSeen': FieldValue.serverTimestamp(),
-      });
+    try {
+      if (currentUser != null) {
+        await _firestore.collection('users').doc(currentUser!.uid).update({
+          'isOnline': false,
+          'lastSeen': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error updating status during sign out: $e');
     }
     await _auth.signOut();
   }
@@ -97,5 +114,9 @@ class AuthService {
         'name': newName,
       });
     }
+  }
+
+  Future<void> createProfile(UserModel user) async {
+    await _firestore.collection('users').doc(user.uid).set(user.toMap());
   }
 }
