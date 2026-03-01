@@ -63,67 +63,96 @@ class _ChatListScreenState extends State<ChatListScreen> with WidgetsBindingObse
 
   PreferredSizeWidget _buildAppBar(bool isDark) {
     return AppBar(
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: _buildCircleAction(Icons.notes_rounded, isDark),
-      ),
       title: const Text('Chats'),
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: _buildCircleAction(Icons.notifications_none_rounded, isDark),
+        StreamBuilder<List<ChatRoom>>(
+          stream: _chatService.getChatRooms(_authProvider.userModel!.uid),
+          builder: (context, snapshot) {
+            int totalUnread = 0;
+            if (snapshot.hasData) {
+              for (var room in snapshot.data!) {
+                if (room.lastMessageSenderId != _authProvider.userModel!.uid) {
+                  totalUnread += room.unreadCount;
+                }
+              }
+            }
+
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                _buildCircleAction(Icons.notifications_active_outlined, isDark),
+                if (totalUnread > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.rose,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Text(
+                        totalUnread > 9 ? '9+' : totalUnread.toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
+        const SizedBox(width: 16),
       ],
     );
   }
 
   Widget _buildCircleAction(IconData icon, bool isDark) {
+    final fgColor = isDark ? const Color(0xFFE0E0E0) : AppTheme.brown;
+    final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.brown.withValues(alpha: 0.3) : Colors.white,
+        color: bgColor,
         shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.brown.withValues(alpha: 0.05), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Icon(icon, color: isDark ? AppTheme.peach : AppTheme.brown, size: 20),
+      child: Center(
+        child: Icon(icon, color: fgColor, size: 22),
+      ),
     );
   }
 
   Widget _buildSearchAndFilter(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search for item',
-                prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.rose, size: 22),
-                fillColor: isDark ? AppTheme.brown.withValues(alpha: 0.3) : softGreyVariant,
-              ),
-            ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: 'Search chats...',
+          prefixIcon: Icon(Icons.search_rounded, 
+            color: isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.3), 
+            size: 22
           ),
-          const SizedBox(width: 12),
-          _buildFilterButton(isDark),
-        ],
+        ),
       ),
-    );
-  }
-
-  // Helper color for the search bar background (very light light grey)
-  static final Color softGreyVariant = const Color(0xFFF5F5F7);
-
-  Widget _buildFilterButton(bool isDark) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.brown.withValues(alpha: 0.3) : softGreyVariant,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Icon(Icons.tune_rounded, color: isDark ? AppTheme.peach : AppTheme.brown, size: 22),
     );
   }
 
@@ -137,7 +166,7 @@ class _ChatListScreenState extends State<ChatListScreen> with WidgetsBindingObse
         final rooms = snapshot.data!;
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
           itemCount: rooms.length,
           itemBuilder: (context, index) => _buildModernChatTile(rooms[index], currentUser.uid, isDark),
         );
@@ -152,17 +181,24 @@ class _ChatListScreenState extends State<ChatListScreen> with WidgetsBindingObse
       stream: _chatService.getUserStream(otherUserId),
       builder: (context, snapshot) {
         final user = snapshot.data;
-        final name = user?.name ?? 'Loading...';
+        final name = user?.name ?? (snapshot.connectionState == ConnectionState.waiting ? 'Loading...' : 'Deleted User');
         
         if (_searchController.text.isNotEmpty && !name.toLowerCase().contains(_searchController.text.toLowerCase())) {
           return const SizedBox.shrink();
         }
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            color: isDark ? AppTheme.brown.withValues(alpha: 0.2) : Colors.white,
-            borderRadius: BorderRadius.circular(32),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: isDark ? null : [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: ListTile(
             onTap: () {
@@ -177,34 +213,68 @@ class _ChatListScreenState extends State<ChatListScreen> with WidgetsBindingObse
                 ),
               );
             },
-            contentPadding: const EdgeInsets.all(12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             leading: Stack(
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
-                    color: AppTheme.peach.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(24),
+                    color: AppTheme.peach.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Center(
-                    child: Text(
-                      name[0].toUpperCase(),
-                      style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.rose, fontSize: 20),
-                    ),
-                  ),
+                  child: (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            user.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: AppTheme.rose,
+                                    fontSize: 20),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.rose,
+                                fontSize: 20),
+                          ),
+                        ),
                 ),
                 if (user?.isOnline ?? false)
                   Positioned(
-                    right: 0,
-                    bottom: 0,
+                    right: 2,
+                    bottom: 2,
                     child: Container(
-                      width: 16,
-                      height: 16,
+                      width: 14,
+                      height: 14,
                       decoration: BoxDecoration(
                         color: AppTheme.sage,
                         shape: BoxShape.circle,
-                        border: Border.all(color: isDark ? AppTheme.deepBrown : Colors.white, width: 3),
+                        border: Border.all(color: isDark ? const Color(0xFF1E1E1E) : Colors.white, width: 2.5),
+                      ),
+                    ),
+                  )
+                else if (room.unreadCount > 0 && room.lastMessageSenderId != currentUserId)
+                   Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: AppTheme.vibrantBlue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: isDark ? const Color(0xFF1E1E1E) : Colors.white, width: 2),
                       ),
                     ),
                   ),
@@ -215,11 +285,19 @@ class _ChatListScreenState extends State<ChatListScreen> with WidgetsBindingObse
               children: [
                 Text(
                   name,
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: AppTheme.brown),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900, 
+                    fontSize: 17, 
+                    color: isDark ? const Color(0xFFE0E0E0) : AppTheme.brown,
+                  ),
                 ),
                 Text(
                   _formatTimestamp(room.lastMessageTime),
-                  style: TextStyle(color: AppTheme.brown.withValues(alpha: 0.3), fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.3), 
+                    fontSize: 11, 
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -233,26 +311,30 @@ class _ChatListScreenState extends State<ChatListScreen> with WidgetsBindingObse
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppTheme.brown.withValues(alpha: 0.4),
+                        color: isDark ? const Color(0xFF9E9E9E) : AppTheme.brown.withValues(alpha: 0.4),
                         fontSize: 14,
-                        fontWeight: room.unreadCount > 0 ? FontWeight.w800 : FontWeight.w500,
+                        fontWeight: (room.unreadCount > 0 && room.lastMessageSenderId != currentUserId) ? FontWeight.w900 : FontWeight.w500,
                       ),
                     ),
                   ),
-                  if (room.unreadCount > 0)
+                  if (room.unreadCount > 0 && room.lastMessageSenderId != currentUserId)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.rose,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.vibrantBlue,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         room.unreadCount.toString().padLeft(2, '0'),
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                       ),
                     )
                   else if (room.lastMessageSenderId == currentUserId)
-                    Icon(Icons.done_all_rounded, size: 16, color: AppTheme.brown.withValues(alpha: 0.2)),
+                    Icon(
+                      Icons.done_all_rounded, 
+                      size: 16, 
+                      color: isDark ? const Color(0xFF757575) : AppTheme.brown.withValues(alpha: 0.2),
+                    ),
                 ],
               ),
             ),

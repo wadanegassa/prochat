@@ -46,12 +46,14 @@ class ChatService {
         .collection('messages')
         .add(newMessage.toMap());
         
-    // Update last message in chat room for list view (optional but good for performance)
+    // Update last message in chat room for list view
      await _firestore.collection('chat_rooms').doc(chatRoomId).set({
       'lastMessage': text,
       'lastMessageTime': timestamp.millisecondsSinceEpoch,
+      'lastMessageSenderId': senderId,
       'users': ids,
       'type': type.name,
+      'unreadCount': FieldValue.increment(1),
     }, SetOptions(merge: true));
   }
 
@@ -162,6 +164,15 @@ class ChatService {
       final groups = snapshot.docs.map((doc) => GroupModel.fromDocument(doc)).toList();
       groups.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
       return groups;
+    });
+  }
+
+  Stream<GroupModel?> getGroupStream(String groupId) {
+    return _firestore.collection('groups').doc(groupId).snapshots().map((snapshot) {
+      if (snapshot.exists) {
+        return GroupModel.fromDocument(snapshot);
+      }
+      return null;
     });
   }
 
@@ -345,6 +356,10 @@ class ChatService {
     for (var doc in unreadMessages.docs) {
       batch.update(doc.reference, {'isRead': true});
     }
+    
+    // Also reset the unreadCount on the chat_room document
+    batch.update(_firestore.collection('chat_rooms').doc(chatRoomId), {'unreadCount': 0});
+    
     await batch.commit();
   }
 }
