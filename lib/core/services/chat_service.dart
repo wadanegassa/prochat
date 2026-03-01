@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/group_model.dart';
 import '../models/message_model.dart';
 import '../models/user_model.dart';
+import '../models/chat_room.dart';
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -297,6 +298,17 @@ class ChatService {
       });
 
       return rooms;
+    });
+  }
+
+  Stream<List<ChatRoom>> getChatRooms(String userId) {
+    return _firestore
+        .collection('chat_rooms')
+        .where('users', arrayContains: userId)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => ChatRoom.fromDocument(doc)).toList()
+        ..sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
     });
   }
 
