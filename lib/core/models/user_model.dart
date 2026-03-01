@@ -5,6 +5,7 @@ class UserModel {
   final String name;
   final String email;
   final String photoUrl;
+  final String bio;
   final DateTime lastSeen;
   final bool isOnline;
   final String? fcmToken;
@@ -14,6 +15,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.photoUrl,
+    required this.bio,
     required this.lastSeen,
     required this.isOnline,
     this.fcmToken,
@@ -25,6 +27,7 @@ class UserModel {
       'name': name,
       'email': email,
       'photoUrl': photoUrl,
+      'bio': bio,
       'lastSeen': lastSeen.millisecondsSinceEpoch,
       'isOnline': isOnline,
       'fcmToken': fcmToken,
@@ -47,6 +50,7 @@ class UserModel {
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
+      bio: map['bio'] ?? '',
       lastSeen: lastSeen,
       isOnline: map['isOnline'] ?? false,
       fcmToken: map['fcmToken'],
